@@ -1,0 +1,266 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace BattleShip
+{
+    class Program
+    {
+        static Random aleatoire = new Random();
+        public static void InitialiserPlateau(ref int[,] plateau)
+        {
+            //Variables
+
+            int colonne;
+            int ligne;
+            int direction;
+            int i;
+            int j;
+            bool testDouble = false; //Permet de faire un deuxième bateau de taille 3
+            //=====================================Initialisation==============================================
+            for (i=0;i<10;i++)
+            {
+                for(j=0;j<10;j++)
+                {
+                    plateau[i, j] = 0;
+                }
+            }
+
+            //===========================================Remplissage aléatoire===========================================
+            //On effectue la tâche pour les cinq bateaux de tailles k allant de 2 à 5
+            for (int k = 2; k <= 5; k++)
+            {
+                i = 0;
+                j = 0;
+                
+                // Choix de la direction (0 pour vertical, 1 pour horizontal)
+                direction = aleatoire.Next(0, 2);
+
+                //=========================================Vertical=============================================
+                if (direction == 0) 
+                {
+                    colonne = aleatoire.Next(0, 10);
+                    ligne = aleatoire.Next(0, 10 - k); // Quand on est en vertical, le bateau ne peux pas commencer dans les k-1 dernières lignes, auquel cas il sortira du plateau
+
+                    
+                    do //On trouve les variables colonne et ligne telles que, en commençant à la case plateau[colonne,ligne], on ait la place de mettre un bateau à la verticale
+                    {
+                        if (plateau[ligne + i, colonne] != 0)
+                        {
+                            colonne = aleatoire.Next(0, 10);
+                            ligne = aleatoire.Next(0, 10 - k);
+                            i = 0;
+                        }
+                        else
+                        { i++; }
+                        
+
+                    }
+                    while (i < k);
+                    //En ayant les coordonnées colonne et ligne qui sont valables, on construit le bateau
+                    for (i = 0; i < k; i++)
+                    {
+                        if ((k == 3) && (testDouble == true))
+                        {
+                            plateau[ligne + i, colonne] = 9;
+                        }
+                        else
+                        {
+                            plateau[ligne + i, colonne] = k;
+                        }
+                    }
+                }
+
+                //==========================================Horizontal==============================================
+                else // HORIZONTAL
+                {
+                    colonne = aleatoire.Next(0, 10 - k); 
+                    ligne = aleatoire.Next(0, 10); //
+
+                    //On trouve les variables colonne et ligne telles que, en commençant à la case plateau[colonne,ligne], on ait la place de mettre un bateau à l'horizontal
+                    do
+                    {
+                        if (plateau[ligne, colonne + j] != 0)
+                        {
+                            colonne = aleatoire.Next(0, 10 - k); // Quand on est à l'horizontale, le bateau ne peux pas commencer dans les k-1 dernières colonnes, auquel cas il sortira du plateau
+                            ligne = aleatoire.Next(0, 10);
+                            j = 0;
+                        }
+                        else { j++; }
+                        
+                    }
+                    while (j < k);
+                    //En ayant les coordonnées qui sont valables, on construit le bateau
+                    for (j = 0; j < k; j++)
+                    {
+                        if ((k == 3) && (testDouble == true))
+                        {
+                            plateau[ligne, colonne + j] = 9;
+                        }
+                        else
+                        {
+                            plateau[ligne, colonne + j] = k;
+                        }
+                    }
+                }
+                // Comme il y a deux bateaux de tailles trois, on en crée un deuxième. On crée un test qui, quand on tombe la première fois sur k=3, refait k=3 une unique fois
+                if ((k == 3) && (testDouble == false))
+                {
+                    k--;
+                    testDouble = true;
+                }
+            }
+
+        }
+        public static void AfficherPlateau(ref int[,] plateau)
+        {
+            Console.ForegroundColor = ConsoleColor.White;
+            for (int i = 0; i < plateau.GetLength(0); i++)
+            {
+
+                Console.WriteLine("+-+-+-+-+-+-+-+-+-+-+");
+                for (int j = 0; j < plateau.GetLength(1); j++)
+                {
+                    Console.Write("|");
+                    // Si la valeur du plateau est égale à 0, c'est que la case est vide
+                    if (plateau[i, j] == 0)
+                    {
+                        Console.Write(" ");
+                    }
+                    else
+                    {
+                        // Si la valeur est positive, c'est soit un tire loupé (1) soit un bateau (2 à  9)
+                        if (plateau[i, j] > 0)
+                        {
+                            if (plateau[i, j] == 1)
+                            {
+                                Console.Write("X");
+                            }
+                            else
+                            {
+                                if (plateau[i, j] == 2)
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Green;
+                                    Console.Write("O");
+                                    Console.ForegroundColor = ConsoleColor.White;
+                                }
+                                if (plateau[i, j] == 3)
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Blue;
+                                    Console.Write("O");
+                                    Console.ForegroundColor = ConsoleColor.White;
+                                }
+                                if (plateau[i, j] == 4)
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Cyan;
+                                    Console.Write("O");
+                                    Console.ForegroundColor = ConsoleColor.White;
+                                }
+                                if (plateau[i, j] == 5)
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Yellow;
+                                    Console.Write("O");
+                                    Console.ForegroundColor = ConsoleColor.White;
+                                }
+                                if (plateau[i, j] == 9)
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Magenta;
+                                    Console.Write("O");
+                                    Console.ForegroundColor = ConsoleColor.White;
+                                }
+
+                            }
+                        }
+                        // Si la valeur est negative, c'est soit une case bateau coulé (-1) soit une case touchée (-2 à -9)
+                        else
+                        {
+                            if (plateau[i, j] == -1)
+                            {
+                                Console.ForegroundColor = ConsoleColor.DarkRed;
+                                Console.Write("O");
+                                Console.ForegroundColor = ConsoleColor.White;
+                            }
+                            else
+                            {
+                                Console.ForegroundColor = ConsoleColor.Red;
+                                Console.Write("O");
+                                Console.ForegroundColor = ConsoleColor.White;
+                            }
+                        }
+
+                    }
+
+                }
+                Console.WriteLine("| " + (i + 1));
+            }
+            Console.WriteLine("+-+-+-+-+-+-+-+-+-+-+");
+            Console.WriteLine(" A B C D E F G H I J");
+        }
+
+        public static void AfficherPlateauAdverse(ref int[,] plateau)
+        {
+            //La seule différence ici est qu'on n'affiche pas les bateaux, et qu'on remplasse des O par des croix
+            Console.ForegroundColor = ConsoleColor.White;
+            for (int i = 0; i < plateau.GetLength(0); i++)
+            {
+
+                Console.WriteLine("+-+-+-+-+-+-+-+-+-+-+");
+                for (int j = 0; j < plateau.GetLength(1); j++)
+                {
+                    Console.Write("|");
+                    if (plateau[i, j] >= 0)
+                    {
+                        if (plateau[i, j] == 1)
+                        {
+                            Console.Write("X");
+                        }
+                        else
+                        {
+                            Console.Write(" ");
+                        }
+
+                    }
+                    else
+                    {
+                        if (plateau[i, j] == -1)
+                        {
+                            Console.ForegroundColor = ConsoleColor.DarkRed;
+                            Console.Write("X");
+                            Console.ForegroundColor = ConsoleColor.White;
+                        }
+                        else
+                        {
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.Write("X");
+                            Console.ForegroundColor = ConsoleColor.White;
+                        }
+                    }
+
+                }
+                Console.WriteLine("| " + (i + 1));
+            }
+
+            Console.WriteLine("+-+-+-+-+-+-+-+-+-+-+");
+            Console.WriteLine(" A B C D E F G H I J");
+            Console.WriteLine(" ");
+        }
+
+
+        static void Main(string[] args)
+        {
+            int[,] plateauJoueur = new int[10, 10];
+            int[,] plateauOrdi = new int[10, 10];
+            for (int i = 0; i < 20; i++)
+            {
+                InitialiserPlateau(ref plateauJoueur);
+                InitialiserPlateau(ref plateauOrdi);
+                AfficherPlateau(ref plateauJoueur);
+                AfficherPlateau(ref plateauOrdi);
+            }
+
+
+        }
+    }
+}
