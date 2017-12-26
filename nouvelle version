@@ -1,0 +1,757 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+
+namespace BattleShip
+{
+    class Program
+    {
+    static Random aleatoire = new Random();
+
+        public static void InitialiserPlateau(ref int[,] plateau)
+        {
+            //Variables
+
+            int colonne;
+            int ligne;
+            int direction;
+            int i;
+            int j;
+            bool testDouble = false; //Permet de faire un deuxième bateau de taille 3
+            //=====================================Initialisation==============================================
+            for (i = 0; i < 10; i++)
+            {
+                for (j = 0; j < 10; j++)
+                {
+                    plateau[i, j] = 0;
+                }
+            }
+
+            //===========================================Remplissage aléatoire===========================================
+            //On effectue la tâche pour les cinq bateaux de tailles k allant de 2 à 5
+            for (int k = 2; k <= 5; k++)
+            {
+                i = 0;
+                j = 0;
+
+                // Choix de la direction (0 pour vertical, 1 pour horizontal)
+                direction = aleatoire.Next(0, 2);
+
+                //=========================================Vertical=============================================
+                if (direction == 0)
+                {
+                    colonne = aleatoire.Next(0, 10);
+                    ligne = aleatoire.Next(0, 10 - k); // Quand on est en vertical, le bateau ne peux pas commencer dans les k-1 dernières lignes, auquel cas il sortira du plateau
+
+
+                    do //On trouve les variables colonne et ligne telles que, en commençant à la case plateau[colonne,ligne], on ait la place de mettre un bateau à la verticale
+                    {
+                        if (plateau[ligne + i, colonne] != 0)
+                        {
+                            colonne = aleatoire.Next(0, 10);
+                            ligne = aleatoire.Next(0, 10 - k);
+                            i = 0;
+                        }
+                        else
+                        { i++; }
+
+
+                    }
+                    while (i < k);
+                    //En ayant les coordonnées colonne et ligne qui sont valables, on construit le bateau
+                    for (i = 0; i < k; i++)
+                    {
+                        if ((k == 3) && (testDouble == true))
+                        {
+                            plateau[ligne + i, colonne] = 9;
+                        }
+                        else
+                        {
+                            plateau[ligne + i, colonne] = k;
+                        }
+                    }
+                }
+
+                //==========================================Horizontal==============================================
+                else // HORIZONTAL
+                {
+                    colonne = aleatoire.Next(0, 10 - k);
+                    ligne = aleatoire.Next(0, 10); //
+
+                    //On trouve les variables colonne et ligne telles que, en commençant à la case plateau[colonne,ligne], on ait la place de mettre un bateau à l'horizontal
+                    do
+                    {
+                        if (plateau[ligne, colonne + j] != 0)
+                        {
+                            colonne = aleatoire.Next(0, 10 - k); // Quand on est à l'horizontale, le bateau ne peux pas commencer dans les k-1 dernières colonnes, auquel cas il sortira du plateau
+                            ligne = aleatoire.Next(0, 10);
+                            j = 0;
+                        }
+                        else { j++; }
+
+                    }
+                    while (j < k);
+                    //En ayant les coordonnées qui sont valables, on construit le bateau
+                    for (j = 0; j < k; j++)
+                    {
+                        if ((k == 3) && (testDouble == true))
+                        {
+                            plateau[ligne, colonne + j] = 9;
+                        }
+                        else
+                        {
+                            plateau[ligne, colonne + j] = k;
+                        }
+                    }
+                }
+                // Comme il y a deux bateaux de tailles trois, on en crée un deuxième. On crée un test qui, quand on tombe la première fois sur k=3, refait k=3 une unique fois
+                if ((k == 3) && (testDouble == false))
+                {
+                    k--;
+                    testDouble = true;
+                }
+            }
+
+        }
+
+        public static void AfficherPlateau(ref int[,] plateau)
+        {
+            Console.ForegroundColor = ConsoleColor.White;
+            for (int i = 0; i < plateau.GetLength(0); i++)
+            {
+
+                Console.WriteLine("+-+-+-+-+-+-+-+-+-+-+");
+                for (int j = 0; j < plateau.GetLength(1); j++)
+                {
+                    Console.Write("|");
+                    // Si la valeur du plateau est égale à 0, c'est que la case est vide
+                    if (plateau[i, j] == 0)
+                    {
+                        Console.Write(" ");
+                    }
+                    else
+                    {
+                        // Si la valeur est positive, c'est soit un tire loupé (1) soit un bateau (2 à  9)
+                        if (plateau[i, j] > 0)
+                        {
+                            if (plateau[i, j] == 1)
+                            {
+                                Console.Write("X");
+                            }
+                            else
+                            {
+                                if (plateau[i, j] == 2)
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Green;
+                                    Console.Write("O");
+                                    Console.ForegroundColor = ConsoleColor.White;
+                                }
+                                if (plateau[i, j] == 3)
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Blue;
+                                    Console.Write("O");
+                                    Console.ForegroundColor = ConsoleColor.White;
+                                }
+                                if (plateau[i, j] == 4)
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Cyan;
+                                    Console.Write("O");
+                                    Console.ForegroundColor = ConsoleColor.White;
+                                }
+                                if (plateau[i, j] == 5)
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Yellow;
+                                    Console.Write("O");
+                                    Console.ForegroundColor = ConsoleColor.White;
+                                }
+                                if (plateau[i, j] == 9)
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Magenta;
+                                    Console.Write("O");
+                                    Console.ForegroundColor = ConsoleColor.White;
+                                }
+
+                            }
+                        }
+                        // Si la valeur est negative, c'est soit une case bateau coulé (-1) soit une case touchée (-2 à -9)
+                        else
+                        {
+                            if (plateau[i, j] == -1)
+                            {
+                                Console.ForegroundColor = ConsoleColor.DarkRed;
+                                Console.Write("O");
+                                Console.ForegroundColor = ConsoleColor.White;
+                            }
+                            else
+                            {
+                                Console.ForegroundColor = ConsoleColor.Red;
+                                Console.Write("O");
+                                Console.ForegroundColor = ConsoleColor.White;
+                            }
+                        }
+
+                    }
+
+                }
+                Console.WriteLine("| " + (i + 1));
+            }
+            Console.WriteLine("+-+-+-+-+-+-+-+-+-+-+");
+            Console.WriteLine(" A B C D E F G H I J");
+        }
+
+        public static void AfficherPlateauAdverse(ref int[,] plateau)
+        {
+            //La seule différence ici est qu'on n'affiche pas les bateaux, et qu'on remplasse des O par des croix
+            Console.ForegroundColor = ConsoleColor.White;
+            for (int i = 0; i < plateau.GetLength(0); i++)
+            {
+
+                Console.WriteLine("+-+-+-+-+-+-+-+-+-+-+");
+                for (int j = 0; j < plateau.GetLength(1); j++)
+                {
+                    Console.Write("|");
+                    if (plateau[i, j] >= 0)
+                    {
+                        if (plateau[i, j] == 1)
+                        {
+                            Console.Write("X");
+                        }
+                        else
+                        {
+                            Console.Write(" ");
+                        }
+
+                    }
+                    else
+                    {
+                        if (plateau[i, j] == -1)
+                        {
+                            Console.ForegroundColor = ConsoleColor.DarkRed;
+                            Console.Write("X");
+                            Console.ForegroundColor = ConsoleColor.White;
+                        }
+                        else
+                        {
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.Write("X");
+                            Console.ForegroundColor = ConsoleColor.White;
+                        }
+                    }
+
+                }
+                Console.WriteLine("| " + (i + 1));
+            }
+
+            Console.WriteLine("+-+-+-+-+-+-+-+-+-+-+");
+            Console.WriteLine(" A B C D E F G H I J");
+            Console.WriteLine(" ");
+        }        
+
+        public static int Jouer(ref int[,] plateau, int i, int j, int nbCouler, string[] bateaux) // Effectue une modification de la case visée. Vérifie si un bateau est touché ou coulé. Renvoie nbCouler, qui est +1 si un bateau a été coulé.
+        {
+            if (VerifierToucher(ref plateau, i, j) == true) // on touche un bateau
+            {
+                Console.WriteLine("Un bateau est touché !"); // on annonce
+                plateau[i, j] = -plateau[i, j]; // on note la case comme touchée
+                if (VerifierCouler(ref plateau, i, j, bateaux) == true) { nbCouler++; } // est ce que l'on a coulé ce bateau ? toutes les modifications et annonces sont gérées dans la fonction VérifierCouler
+            }
+            else // vise dans l'eau
+            {
+                Console.WriteLine("C'est raté !");
+                plateau[i, j] = 1; // on note d'avoir déjà touché cette case pour ne pas le refaire
+            }
+
+            return nbCouler;
+        }
+
+        public static bool VerifierToucher(ref int[,] plateau, int i, int j)
+        {
+            if (plateau[i, j] != 0) { return true; }
+            else { return false; }
+        }
+
+        public static bool VerifierCouler(ref int[,] plateau, int i, int j, string[] bateaux) // Si un bateau est touché, regarde si le-dit bateau est coulé. Si oui, modifie sa valeur dans le plateau comme "-1" et retourne true.
+        {
+            bool couler = false;
+
+            int typeBateau = plateau[i, j]; // le type du bateau permet de trouver les autres cases où se trouve ce bateau (abs 
+            int tailleBateau = Math.Abs(plateau[i, j]) % 6; // la taille du bateau permet de réduire la partie parcourue ensuite
+            // NOTE : modulo 6 car on a deux bateaux de taille 3 : on note le deuxième "9" et on obtient la taille 3, sans le confondre dans la lecture avec l'autre bateau taille 3 noté "3"
+
+            int compteurTouche = 0; // le nombre de fois où le bateau a déjà été touché
+            int f = 0; // variablespour les boucles
+
+            //min et max pour ne pas sortir du plateau
+            int min;
+            int max;
+
+
+            // colonne en premier
+            min = Math.Max(i - tailleBateau + 1, 0);
+            max = Math.Min(i + tailleBateau, 10);
+
+            for (f = min; f < max; f++)
+            {
+                if (plateau[f, j] == typeBateau) { compteurTouche++; } // test du nombre de case appartenant au bateau ET déjà touchées
+            }
+
+            if (compteurTouche == tailleBateau) // si le bateau est effectivement coulé 
+            {
+                Console.WriteLine("Le " + bateaux[Math.Abs(typeBateau) - 2] + " est coulé !"); // on l'annonce 
+                couler = true;
+                for (f = min; f < max; f++)
+                {
+                    if (plateau[f, j] == typeBateau) { plateau[f, j] = -1; } // on transforme sa notation en "-1" pour tous bateaux coulés (différences d'affichages)
+                }
+
+            }
+
+            // ligne seulement si rien trouver sur la colonne 
+            if (compteurTouche == 1) // 1 car on n'a trouvé que la case centrale sur la colonne
+            {
+                compteurTouche = 0;
+                min = Math.Max(j - tailleBateau + 1, 0);
+                max = Math.Min(j + tailleBateau, 10);
+                for (f = min; f < max; f++)
+                {
+                    if (plateau[i, f] == typeBateau) { compteurTouche++; }
+                }
+
+                // de nouveau la boucle 'if' pour noter ce bateau comme coulé : redondance de cette boucle pour éviter de calculer plusieurs fois les min max.
+                if (compteurTouche == tailleBateau) // si le bateau est effectivement coulé 
+                {
+                    Console.WriteLine("Le " + bateaux[Math.Abs(typeBateau) - 2] + " est coulé !"); // on l'annonce 
+                    couler = true;
+                    for (f = min; f < max; f++)
+                    {
+                        if (plateau[f, j] == typeBateau) { plateau[i, f] = -1; } // on transforme sa notation en "-1" pour tous bateaux coulés (différences d'affichages)
+                    }
+
+                }
+            }
+
+            return couler;
+
+        }
+        
+        public static int[] DemanderLaCase(ref int[,] plateau) // demande une case au joueur qui doit être valide : pas encore touchée, et dans le plateau
+        {
+            char colonneLettre = ' ';
+            int colonneChiffre = 0;
+            int ligne = 0;
+            int k = 0;
+            bool erreur = false;
+
+            // on fait des tests jusqu'à récupérer une case valide = non touchée
+            do
+            {
+                if (k == 1) { Console.WriteLine("Vous avez déjà tiré sur cette case. Choisissez-en une autre."); }
+
+                // on fait des tests jusqu'à récupérer une case valide = lisible par l'algo et dans le plateau
+                do
+                {
+                    erreur = false;
+                    colonneLettre = Console.ReadKey().KeyChar;
+                    colonneChiffre = (int)colonneLettre - 65; // majuscules ASCII(A) = 65
+                    try // test on rentre un nombre pour la ligne
+                    {
+                        ligne = Math.Abs((int.Parse(Console.ReadLine())) - 1);
+                    }
+                    catch
+                    {
+                        erreur = true;
+                        Console.WriteLine("Le numéro de ligne n'est pas valide...");
+                    }
+
+                    if ((colonneChiffre >= 10) || (colonneChiffre < 0)) // test dans le plateau (colonne)
+                    {
+                        Console.WriteLine(colonneLettre + " n'est pas une colonne valide. Utiliser des majuscules, parmi : A, B, C, D, E, F, G, H, I, J.");
+                        erreur = true;
+                    }
+                    if (ligne >= 10) // test dans le plateau (ligne)
+                    {
+                        Console.WriteLine((ligne + 1) + " n'est pas un numéro de ligne valide .Utiliser un nombre de 1 à 10");
+                        erreur = true;
+                    }
+
+                }
+                while (erreur == true); // condition pour être lisible par l'algo et dans le plateau tant qu'à faire
+                k = 1;
+
+            }
+            while ((plateau[ligne, colonneChiffre] != 0) && (plateau[ligne, colonneChiffre] < 2)); // conditions pour être non touchée
+
+
+            int[] tab = { ligne, colonneChiffre };
+            return tab;
+        }
+
+        public static int Menu(ref int[,] plateauJoueur, ref int[,] plateauOrdi, ref ConsoleKey charger)
+        {
+
+
+            int choiceNumber = 1;
+            int difficulte = 0;
+            ConsoleKey choiceKey;
+            do
+            {
+                switch (choiceNumber)
+                {
+                    case 1:
+                        Console.WriteLine(" ========== Menu ========== ");
+                        Console.Write("          ");
+                        Console.BackgroundColor = ConsoleColor.White;
+                        Console.ForegroundColor = ConsoleColor.Black;
+                        Console.WriteLine("Jouer");
+                        Console.BackgroundColor = ConsoleColor.Black;
+                        Console.ForegroundColor = ConsoleColor.White;
+                        Console.Write("     Difficulté : - ");
+                        switch (difficulte)
+                        {
+                            case 0:
+                                Console.Write("Facile");
+                                break;
+                            case 1:
+                                Console.Write("Intermédiaire");
+                                break;
+                            case 2:
+                                Console.Write("Difficile");
+                                break;
+                        }
+                        Console.WriteLine(" +");
+                        Console.WriteLine("          Charger");
+                        Console.WriteLine("          Quitter\n");
+                        break;
+                    case 2:
+
+                        Console.WriteLine(" ========== Menu ========== ");
+                        Console.WriteLine("          Jouer");
+                        Console.Write("     Difficulté : - ");
+                        Console.BackgroundColor = ConsoleColor.White;
+                        Console.ForegroundColor = ConsoleColor.Black;
+                        switch (difficulte)
+                        {
+                            case 0:
+                                Console.Write("Facile");
+                                break;
+                            case 1:
+                                Console.Write("Intermédiaire");
+                                break;
+                            case 2:
+                                Console.Write("Difficile");
+                                break;
+                        }
+                        Console.BackgroundColor = ConsoleColor.Black;
+                        Console.ForegroundColor = ConsoleColor.White;
+                        Console.WriteLine(" +");
+                        Console.WriteLine("          Charger");
+                        Console.WriteLine("          Quitter\n");
+                        break;
+
+                    case 3:
+                        Console.WriteLine(" ========== Menu ========== ");
+                        Console.WriteLine("          Jouer");
+                        Console.Write("     Difficulté : - ");
+                        switch (difficulte)
+                        {
+                            case 0:
+                                Console.Write("Facile");
+                                break;
+                            case 1:
+                                Console.Write("Intermédiaire");
+                                break;
+                            case 2:
+                                Console.Write("Difficile");
+                                break;
+                        }
+                        Console.WriteLine(" +");
+                        Console.Write("          ");
+                        Console.BackgroundColor = ConsoleColor.White;
+                        Console.ForegroundColor = ConsoleColor.Black;
+                        Console.WriteLine("Charger");
+                        Console.BackgroundColor = ConsoleColor.Black;
+                        Console.ForegroundColor = ConsoleColor.White;
+                        Console.WriteLine("          Quitter\n");
+                        break;
+                    case 4:
+                        Console.WriteLine(" ========== Menu ========== ");
+                        Console.WriteLine("          Jouer");
+                        Console.Write("     Difficulté : - ");
+                        switch (difficulte)
+                        {
+                            case 0:
+                                Console.Write("Facile");
+                                break;
+                            case 1:
+                                Console.Write("Intermédiaire");
+                                break;
+                            case 2:
+                                Console.Write("Difficile");
+                                break;
+                        }
+                        Console.WriteLine(" +");
+                        Console.WriteLine("          Charger");
+                        Console.Write("          ");
+                        Console.BackgroundColor = ConsoleColor.White;
+                        Console.ForegroundColor = ConsoleColor.Black;
+                        Console.WriteLine("Quitter\n");
+                        Console.BackgroundColor = ConsoleColor.Black;
+                        Console.ForegroundColor = ConsoleColor.White;
+                        break;
+                }
+
+                Console.WriteLine(" ========================== ");
+
+                choiceKey = Console.ReadKey().Key;
+                if ((choiceKey == ConsoleKey.DownArrow) && (choiceNumber < 4)) { choiceNumber++; }
+                else if ((choiceKey == ConsoleKey.UpArrow) && (choiceNumber > 1)) { choiceNumber--; }
+                else if ((choiceNumber == 2) && (choiceKey == ConsoleKey.LeftArrow) && (difficulte > 0)) { difficulte--; }
+                else if ((choiceNumber == 2) && (choiceKey == ConsoleKey.RightArrow) && (difficulte < 2)) { difficulte++; }
+
+                Console.Clear();
+            }
+            while ((choiceKey != ConsoleKey.Enter)||(choiceNumber==2));
+
+            switch (choiceNumber)
+            {
+                case 1:
+                    return difficulte;
+                case 2:
+                    return 0;
+                case 3:
+                    //charger la partie, recup et retourner sa difficulte aussi
+                    difficulte = 0;
+                    charger = ConsoleKey.Enter;
+                    AfficherPlateau(ref plateauJoueur);
+                    AfficherPlateauAdverse(ref plateauOrdi);
+                    return difficulte;
+                case 4:
+                    Environment.Exit(0);
+                    return 0;
+            }
+            return 0;
+        }
+
+        public static int[,] DemanderLesCases(ref int[,] plateau, int nbCouler) // demander toutes les cases au joueur, selon le nombre de bateau coulé (variante salvo). Empeche de tirer deux fois sur la même cible
+        {
+            int k = 0;
+            int j = 0;
+            
+            int[,] tirs = new int[5-nbCouler,2]; // à retouner : l'ensemble des tirs
+            int[] tir = new int[2]; // récupérer un tir
+            bool dejaTirer = false; // ne pas tirer deux fois sur la même cible durant le même tour
+            
+            Console.WriteLine("Vous pouvez attaquer {0} cases. Pour rappel, voici le plateau de l'adversaire : ", (5 - nbCouler));
+            AfficherPlateauAdverse(ref plateau);
+            for (k = 0; k < 5-nbCouler; k++)
+            {
+                if (dejaTirer==true) { Console.Write("Vous avez déjà visée cette case durant ce tour... "); }
+                Console.Write("Quelle est la {0}ème case à attaquer ? : ", (k+1));
+                do
+                {
+                    tir = DemanderLaCase(ref plateau);
+                    j = 0;
+                    dejaTirer = false;
+                    while ((j < k) && (dejaTirer == false)) // boucle dans les coups déjà demander pour ne pas tirer deux fois sur la même cible durant le même tour
+                    {
+                        if ((tir[0] == tirs[j, 0])&&(tir[1]==tirs[j,1])) { dejaTirer = true; }
+                        j++;
+                    }
+                }
+                while (dejaTirer == true);
+                tirs[k, 0] = tir[0];
+                tirs[k, 1] = tir[1];
+            }
+
+            return tirs;
+        }
+
+        public static int[] ChoisirCaseOrdi(ref int[,] plateau, int nbCouler, int difficulte)
+        { 
+            
+            int colonne = 0;
+            int ligne = 0;
+
+            // on fait des tests jusqu'à récupérer une case valide = non touchée
+            do
+            {
+                if (difficulte == 0) // facile = aléatoire
+                {
+                    ligne = aleatoire.Next(0, 10);
+                    colonne = aleatoire.Next(0, 10);
+                }
+
+                if (difficulte == 1) // intermédaire = si dernière case attaquée est touchée, attaquer proche
+                {
+                    ligne = aleatoire.Next(0, 10);
+                    colonne = aleatoire.Next(0, 10);
+                }
+
+                if (difficulte == 2) // difficile = attaque autour des cases touchées tant que bateau non coulé
+                {
+                    ligne = aleatoire.Next(0, 10);
+                    colonne = aleatoire.Next(0, 10);
+                }
+
+            }
+            while ((plateau[ligne, colonne] != 0) && (plateau[ligne, colonne] < 2)); // conditions pour être non touchée
+
+            int[] tab = { ligne, colonne };
+            return tab;
+        }
+
+        public static int[,] ChoisirCasesOrdi(ref int[,] plateau, int nbCouler, int difficulte)
+        {
+            int k = 0;
+            int j = 0;
+            int[,] tirs = new int[5 - nbCouler, 2]; // à retouner : l'ensemble des tirs
+            int[] tir = new int[2]; // récupérer un tir
+            bool dejaTirer = false; // ne pas tirer deux fois sur la même cible durant le même tour
+            
+            for (k = 0; k < 5 - nbCouler; k++)
+            {
+                do
+                {
+                    tir = ChoisirCaseOrdi(ref plateau, nbCouler, difficulte);
+                    j = 0;
+                    dejaTirer = false;
+                    while ((j < k) && (dejaTirer == false)) // boucle dans les coups déjà demander pour ne pas tirer deux fois sur la même cible durant le même tour
+                    {
+                        if ((tir[0] == tirs[j, 0]) && (tir[1] == tirs[j, 1])) { dejaTirer = true; }
+                        j++;
+                    }
+                }
+                while (dejaTirer == true);
+                tirs[k, 0] = tir[0];
+                tirs[k, 1] = tir[1];
+            }
+
+            Console.Write("L'ordinateur attaque les cases ");
+            for (k=0;k<5-nbCouler;k++)
+            {
+                Console.Write((char)(tirs[k, 1] + 65));
+                Console.Write((tirs[k, 0] + 1) + ", ");
+            }
+                
+            Console.WriteLine(" ");
+            return tirs;
+        }
+
+        static void Main(string[] args)
+        {                
+            
+            // ======================================================================== INITIALISATION VARIABLES
+            // varibale pour les boucles
+            int k = 0;
+            int coups;
+
+            // bool pour fin de boucle de jeu
+            bool victoire = false;
+
+            // liste des noms des bateaux
+            string[] bateaux = { "contre torpilleur", "sous - marin", "cuirassé", "porte avion", " ", " ", " ", "croiseur" };
+
+            // compteurs de bateaux coulés
+            int nbCoulerJoueur = 0; // nombre de bateau coulé sur le plateau joueur
+            int nbCoulerOrdi = 0;
+
+            // tableau des tirs effectués lors d'un tour (variante salvo)
+            int[,] tirs;
+
+            // matrices 10x10 pour les deux plateaux, qui auront la même reférence pendant toute la session de jeu
+            int[,] plateauJoueur = new int[10, 10];
+            int[,] plateauOrdi = new int[10, 10];
+
+            // Deux clefs sont utilisées pour interargir avec le joueur
+            ConsoleKey satisfaitPlateau = ConsoleKey.Enter; // utiliser dans la création du plateau
+            ConsoleKeyInfo continuer; // utiliser pour continuer, sauvegarder, quitter en fin de tour
+            char pause = 'a'; // charactère pour les temps de pause
+
+            // ======================================================================== BOUCLE MENU (pour pouvoir jouer plusieurs partie d'affilée)
+            do
+            {
+                InitialiserPlateau(ref plateauOrdi);
+                satisfaitPlateau = ConsoleKey.A;
+
+                Console.Clear();
+                int difficulte = Menu(ref plateauJoueur, ref plateauOrdi, ref satisfaitPlateau);
+
+                // demande au joueur le plateau qu'il veut
+                while (satisfaitPlateau != ConsoleKey.Enter) // sera déjà vrai si on a chargé une partie
+                {
+                    InitialiserPlateau(ref plateauJoueur);
+                    AfficherPlateau(ref plateauJoueur);
+                    Console.WriteLine("Appuyer sur entrée si ce plateau vous convient, sinon appuyer sur n'importe quelle autre touche");
+                    satisfaitPlateau = Console.ReadKey().Key;
+                }
+
+                // ======================================================================== BOUCLE JEU (jusqu'à quitter ou gagner)
+                do
+                {
+                    //faire jouer le joueur
+                    coups = 5 - nbCoulerOrdi; // garder en mémoire le nombre de coups car nbCouler peut être modifié par la suite
+                    tirs = new int[coups, 2]; // ça c'est peut être pas très opti ??
+                    tirs = DemanderLesCases(ref plateauOrdi, nbCoulerOrdi);
+                    for (k = 0; k < coups; k++)
+                    {
+                        nbCoulerOrdi = Jouer(ref plateauOrdi, tirs[k, 0], tirs[k, 1], nbCoulerOrdi, bateaux);
+                    }
+                    AfficherPlateauAdverse(ref plateauOrdi);
+                    
+                    // en cas de victoire du Joueur
+                    if (nbCoulerOrdi == 5)
+                    {
+                        victoire = true;
+                        Console.WriteLine("VICTOIRE ! Félicitation, vous avez gagné. Appuyez sur ECHAP pour quitter, n'importe quelle autre touche pour revenir au menu");
+                    }
+
+
+                    // faire jouer l'ordi
+                    else
+                    {
+                        // on met la pause ici pour ne pas la faire avant la victoire possible, et ne pas interférer dan sle if / else
+                        //temps de pause pour prendre connaissance des changements
+                        Console.WriteLine("Pressez une touche pour continuer");
+                        pause = Console.ReadKey().KeyChar;
+
+                        coups = 5 - nbCoulerJoueur;
+                        tirs = new int[coups, 2]; // ça c'est peut être pas très opti ??
+                        tirs = ChoisirCasesOrdi(ref plateauJoueur, nbCoulerJoueur, difficulte);
+                        for (k = 0; k < coups; k++)
+                        {
+                            nbCoulerJoueur = Jouer(ref plateauJoueur, tirs[k, 0], tirs[k, 1], nbCoulerJoueur, bateaux);
+                        }
+                        AfficherPlateau(ref plateauJoueur);
+                        // en cas de victoire de l'Ordi
+                        if (nbCoulerJoueur == 5)
+                        {
+                            victoire = true;
+                            Console.WriteLine("DEFAITE ! L'ordinateur a gagnée, dommage... Appuyez sur ECHAP pour quitter, n'importe quelle autre touche pour revenir au menu");
+                        }
+                        
+                        //temps de pause pour prendre connaissance des changements
+
+                        else
+                        {
+                            Console.WriteLine("Appuyez sur Entrer pour continuer, sinon appuyer sur 's' pour sauvegarder, et ECHAP pour quitter"); // Remarque : n'importe quelle touche autre que s et ECHAP fait continuer
+                            continuer = Console.ReadKey();
+                            if (continuer.KeyChar == 's')
+                            {
+                                //sauvegarder
+                                Console.WriteLine("Appuyez sur Entrer pour continuer, ECHAP pour quitter"); // Remarque : n'importe quelle touche autre que ECHAP fait continuer
+                                continuer = Console.ReadKey();
+                                if (continuer.Key == ConsoleKey.Escape) { Environment.Exit(0);}
+                            }
+                            if (continuer.Key == ConsoleKey.Escape) { Environment.Exit(0); }
+                        }
+                    }
+                } while (victoire == false);
+
+            } while (Console.ReadKey().Key != ConsoleKey.Escape);
+           
+        }
+    }
+}
